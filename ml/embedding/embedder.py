@@ -21,7 +21,7 @@ def get_embedding(text: str) -> list:
             "model": "nomic-embed-text",
             "prompt": text
         },
-        timeout=30.0
+        timeout=300.0
     )
     return response.json()["embedding"]
 
