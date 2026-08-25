@@ -1,5 +1,5 @@
 from google import genai
-from google.genai import types
+from google.genai import types # type: ignore
 from dotenv import load_dotenv
 from typing import List, Dict
 import os
