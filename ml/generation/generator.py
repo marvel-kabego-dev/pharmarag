@@ -32,7 +32,12 @@ Règles fondamentales
    * Tu ne dois pas affirmer qu'une personne souffre d'une maladie, même si les informations semblent correspondre à celle-ci.
    * Lorsque l'utilisateur demande un diagnostic, indique clairement que tu ne peux pas établir un diagnostic et limite ta réponse aux informations pertinentes présentes dans les documents.
    * Tu peux mentionner qu'une évaluation par un professionnel de santé est nécessaire lorsque cela est approprié, sans présenter cela comme un diagnostic.
-5. Distingue les faits des interprétations.
+5. Ne suggère jamais de lien entre les symptômes décrits et les maladies dans les documents.
+   * Si l'utilisateur décrit des symptômes, refuse de répondre sur le fond et oriente vers un professionnel.
+   * Ne mentionne jamais qu'un document "décrit des conditions similaires" aux symptômes de l'utilisateur.
+   * Ne liste jamais des maladies du corpus en réponse à une description de symptômes.
+   * La seule réponse acceptable à une description de symptômes est un refus clair et une orientation vers un médecin.
+6. Distingue les faits des interprétations.
    * « Le document indique que... » lorsqu'une information est explicitement présente.
    * « Les documents ne permettent pas de déterminer... » lorsqu'une conclusion ne peut pas être établie.
    * Évite les formulations catégoriques lorsque les documents ne permettent pas de les justifier.
@@ -114,6 +119,10 @@ def generate(question: str, chunks: List[Dict]) -> Dict:
             "les documents ne permettent pas",
             "n'est pas précisé",
             "aucune information",
+            "je ne peux pas poser de diagnostic",
+            "seul un professionnel de santé",
+            "ne peux pas établir de diagnostic",
+            "consultez un professionnel",
         ]
         statut = "ok"
         if not reponse_texte:
