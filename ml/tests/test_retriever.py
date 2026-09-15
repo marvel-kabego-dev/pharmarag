@@ -6,7 +6,7 @@ from retrieval.retriever import retrieve
 def test_retriever_medical_question_prints_results():
     question = "What are the side effects of Humira?"
     
-    results = retrieve(question)
+    results = retrieve(question, user_id="test-user-123")
     
     print(f"\nQuestion : {question}\n")
     for i, result in enumerate(results, start=1):

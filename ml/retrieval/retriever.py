@@ -1,17 +1,24 @@
 from typing import List, Dict, Any
 
 from qdrant_client import QdrantClient
+from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 from embedding.embedder import get_embedding, client_qdrant, _COLLECTION
 
 
-def retrieve(question: str, top_k: int = 5) -> List[Dict[str, Any]]:
+def retrieve(question: str, user_id: str, top_k: int = 5) -> List[Dict[str, Any]]:
 
 	vecteur_question = get_embedding(question)
 
 	results = client_qdrant.query_points(
 		collection_name=_COLLECTION,
 		query=vecteur_question,
+		query_filter=Filter(
+			must=[FieldCondition(
+				key="user_id",
+				match=MatchValue(value=user_id)
+			)]
+		),
 		limit=top_k,
 	).points
 

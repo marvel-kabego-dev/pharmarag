@@ -35,7 +35,7 @@ def run_quality_tests():
         print(f"Question : {test['question']}")
 
         try:
-            chunks = retrieve(test["question"])
+            chunks = retrieve(test["question"], user_id="test-user-123")
         except Exception as e:
             print("Erreur lors de la récupération des chunks:", e)
             chunks = []

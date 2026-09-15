@@ -50,7 +50,7 @@ def reset_collection():
         )
     )
 
-def embed_and_store(chunks: List[Dict]) -> List[int]:
+def embed_and_store(chunks: List[Dict], user_id: str = None) -> List[int]:
     _ensure_collection()
 
     if not chunks:
@@ -84,6 +84,7 @@ def embed_and_store(chunks: List[Dict]) -> List[int]:
             "source": chunk.get("source"),
             "page": chunk.get("page"),
             "chunk_id": chunk.get("chunk_id"),
+            "user_id": user_id,
         }
 
         point_id = start_id + i
