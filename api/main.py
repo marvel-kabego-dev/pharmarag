@@ -3,6 +3,7 @@ from pydantic import BaseModel, EmailStr
 import sys
 import os
 import tempfile
+from fastapi.middleware.cors import CORSMiddleware
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'ml')))
 
@@ -18,6 +19,15 @@ from .database import get_connection
 from .storage import upload_file, download_file
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # Plan free → max 1 doc
 # Plan pro  → max 50 docs
@@ -170,12 +180,29 @@ async def upload_document(
     cursor.close()
     conn.close()
 
-    background_tasks.add_task(process_document, str(document_id), storage_key, user_id)
+    background_tasks.add_task(process_document, str(document_id), storage_key, user_id, file.filename)
 
     return {"message": "Document reçu, ingestion en cours", "document_id": str(document_id)}
 
 
-def process_document(document_id: str, storage_key: str, user_id: str):
+@app.get("/documents")
+def list_documents(user_id: str = Depends(get_current_user)):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, filename, status, created_at FROM documents WHERE user_id = %s ORDER BY created_at DESC",
+        (user_id,)
+    )
+    docs = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return [
+        {"id": str(d[0]), "filename": d[1], "status": d[2], "created_at": str(d[3])}
+        for d in docs
+    ]
+
+
+def process_document(document_id: str, storage_key: str, user_id: str, filename: str):
     status = "failed"
 
     try:
@@ -190,12 +217,19 @@ def process_document(document_id: str, storage_key: str, user_id: str):
         finally:
             os.remove(tmp_path)
 
+        # Corrige le nom de source avec le vrai nom du fichier
+        for page in pages:
+            page["source"] = filename
+
         pages = clean_pages(pages)
         chunks = split_pages(pages)
         embed_and_store(chunks, user_id=user_id)
 
         status = "ready"
-    except Exception:
+    except Exception as e:
+        print(f"❌ Erreur ingestion document {document_id}: {e}")
+        import traceback
+        traceback.print_exc()
         status = "failed"
 
     conn = get_connection()

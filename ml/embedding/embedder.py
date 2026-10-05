@@ -7,7 +7,7 @@ from qdrant_client.models import PointStruct, VectorParams, Distance
 from dotenv import load_dotenv
 from pathlib import Path
 
-load_dotenv(Path(__file__).parent.parent / ".env")
+load_dotenv(Path(__file__).parent.parent.parent / ".env")
 
 client_qdrant = QdrantClient(
     host=os.getenv("QDRANT_HOST"),
