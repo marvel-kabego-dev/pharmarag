@@ -127,7 +127,31 @@ def login(request: LoginRequest):
 
 @app.get("/auth/me")
 def me(user_id: str = Depends(get_current_user)):
-    return {"user_id": user_id}
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        SELECT u.email, u.plan, q.docs_uploaded, q.queries_used
+        FROM users u
+        JOIN quotas q ON q.user_id = u.id
+        WHERE u.id = %s
+        """,
+        (user_id,)
+    )
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not row:
+        raise HTTPException(status_code=404, detail="Utilisateur introuvable")
+
+    return {
+        "user_id": user_id,
+        "email": row[0],
+        "plan": row[1],
+        "docs_uploaded": row[2],
+        "queries_used": row[3]
+    }
 
 
 # Upload de documents
